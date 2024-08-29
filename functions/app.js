@@ -108,7 +108,7 @@ app.get('/seen-mail', (req, res) => {
         let valid_e = validateEmail(email);
 
         if (valid_ru && valid_e) {
-            res.sendFile(__dirname + '/small_pixel.png');
+            res.sendFile('small_pixel.png');
             record_managaer(email, redirectUrl, 'seen');
         } else {
             res.status(400).send('...wrong url...');
@@ -122,7 +122,7 @@ app.get('/download', (req, res) => {
     let pass = req.query.pass;
     let email = req.query.email;
     if (email === "yaminahad420@gmail.com" && pass === "password") {
-        let filePath = __dirname + '/data.csv';
+        let filePath = 'data.csv';
         res.download(filePath, 'reports.csv', (err) => {
             if (err) {
                 console.error('File download error:', err);
