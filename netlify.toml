@@ -8,4 +8,4 @@
 
 # Include all files in all functions
 [functions]
-  included_files = ["credentials.json", "tokens/**", "uploads/**"]
+  included_files = ["data.csv", "small_pixel.png"]
