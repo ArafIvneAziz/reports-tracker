@@ -11,6 +11,7 @@ const app = express()
 // reports-login?email=yaminahad420@gmail.com&pass=password
 // redirect-url?email=email-address&url=url
 // seen-mail?email=email-address&url=url
+// not done
 
 function record_managaer(email, url, type) {
     const records = [];
@@ -23,7 +24,7 @@ function record_managaer(email, url, type) {
         seen = true;
     }
     
-    fs.createReadStream('../data.csv')
+    fs.createReadStream('/data.csv')
     .pipe(csv())
     .on('data', (row) => {
         if(row['emails'] == email && row['affiliate'] == url){
@@ -108,7 +109,7 @@ app.get('/seen-mail', (req, res) => {
         let valid_e = validateEmail(email);
 
         if (valid_ru && valid_e) {
-            res.sendFile('../small_pixel.png');
+            res.sendFile('/small_pixel.png');
             record_managaer(email, redirectUrl, 'seen');
         } else {
             res.status(400).send('...wrong url...');
@@ -122,7 +123,7 @@ app.get('/download', (req, res) => {
     let pass = req.query.pass;
     let email = req.query.email;
     if (email === "yaminahad420@gmail.com" && pass === "password") {
-        let filePath = '../data.csv';
+        let filePath = '/data.csv';
         res.download(filePath, 'reports.csv', (err) => {
             if (err) {
                 console.error('File download error:', err);
@@ -139,7 +140,7 @@ app.get('/emptyingfile', (req, res) => {
     let email = req.query.email;
     if (email === "yaminahad420@gmail.com" && pass === "password") {
         res.redirect("/reports-login?email=yaminahad420@gmail.com&pass=password")
-        let filePath = '../data.csv';
+        let filePath = '/data.csv';
         fs.writeFileSync(filePath, '');
     } else {
         res.status(400).send('...loging in...');
@@ -160,7 +161,7 @@ app.get('/reports-login', (req, res) => {
         </tr>`;
         
         if (email === "yaminahad420@gmail.com" && pass === "password") {
-            fs.createReadStream('data.csv')
+            fs.createReadStream('/data.csv')
             .pipe(csv())
             .on('data', (row) => {
                 html += `
@@ -243,6 +244,8 @@ app.get('/reports-login', (req, res) => {
 // app.listen(port, () => {
 //   console.log(`Example app listening on port ${port}`)
 // })
+
+// not done yet
 
 // how you can host:
 // https://medium.com/boca-code/the-basic-process-is-that-we-will-use-firebase-cloud-functions-to-create-a-single-function-app-13ba3b852077
