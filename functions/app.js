@@ -108,7 +108,7 @@ app.get('/seen-mail', (req, res) => {
         let valid_e = validateEmail(email);
 
         if (valid_ru && valid_e) {
-            res.sendFile('small_pixel.png');
+            res.sendFile('/small_pixel.png');
             record_managaer(email, redirectUrl, 'seen');
         } else {
             res.status(400).send('...wrong url...');
