@@ -1,6 +1,4 @@
 const express = require('express')
-const functions = require("firebase-functions");
-const cors = require("cors");
 const fs = require('fs');
 const serverless = require('serverless-http');
 const csv = require('csv-parser');
