@@ -1,20 +1,36 @@
-const express = require('express')
-const fs = require('fs');
 const serverless = require('serverless-http');
-const csv = require('csv-parser');
-const { createObjectCsvWriter } = require('csv-writer');
+const express = require('express')
+const { Client } = require('pg')
 
-const app = express()
-// const port = 8080
+const client = new Client("postgresql://yamin:rf8uua05IG0clw1B6F2BpA@inofficial-projects-9932.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/email-track?sslmode=verify-full")
 
-// test urls
-// reports-login?email=yaminahad420@gmail.com&pass=password
-// redirect-url?email=email-address&url=url
-// seen-mail?email=email-address&url=url
+async function Build_Collection(){
+    // Connect Cockroachlabs
+    await client.connect();
+}
 
-function record_managaer(email, url, type) {
-    const records = [];
-    let hasit = false;
+Build_Collection();
+
+const app = express();
+const port = 8080;
+
+async function delete_db_cats() {
+    // Delete Table
+    await client.query("DROP TABLE users;");
+
+    // Create Table
+    await client.query(`
+        CREATE TABLE users (
+        Seen BOOLEAN,
+        Visited BOOLEAN,
+        Email VARCHAR(255),
+        AffiliateURL VARCHAR(255),
+        CONSTRAINT email_format CHECK (Email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+        );
+    `);
+}
+
+async function record_managaer(email, url, type) {
     
     let seen = visited = false;
     if (type === "visited") {
@@ -23,49 +39,28 @@ function record_managaer(email, url, type) {
         seen = true;
     }
     
-    fs.createReadStream('data.csv')
-    .pipe(csv())
-    .on('data', (row) => {
-        if(row['emails'] == email && row['affiliate'] == url){
-            if(row['visited'] == "true") {
-                records.push(row);
-            } else {
-                records.push({
-                    seen: seen,
-                    visited: visited,
-                    emails: email,
-                    affiliate: url
-                });
-            }
-            hasit = true;
-        } else {
-            records.push(row);
-        }
-    })
-    .on('end', () => {
-        if(!hasit) {
-            records.push({
-                seen: seen,
-                visited: visited,
-                emails: email,
-                affiliate: url
-            });
-        }
-    
-        // Write the updated records back to the file
-        const csvWriter = createObjectCsvWriter({
-        path: 'data.csv',
-        header: [
-            { id: 'seen', title: 'seen' },
-            { id: 'visited', title: 'visited' },
-            { id: 'emails', title: 'emails' },
-            { id: 'affiliate', title: 'affiliate' }
-        ]
-    });
+    try {
 
-    csvWriter.writeRecords(records)
-      .then(() => console.log('CSV file updated successfully!'));
-    });
+        // Find queries
+        let results = await client.query(`SELECT * FROM users WHERE email = '${email}' AND affiliateurl = '${url}';`);
+        let row = results.rows[0];
+
+        if(row.visited == true) {
+            let x = "";
+        } else if(visited == true) {
+            // Update query
+            await client.query(`UPDATE users SET seen = TRUE, visited = TRUE WHERE email = '${email}' AND affiliateurl = '${url}';`);
+        }
+        
+    } catch (e) {
+        if(visited == true) {
+             // Insert query
+             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, TRUE, '${email}', '${url}');`);
+        } else {
+            // Insert query
+            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, FALSE, '${email}', '${url}');`);
+        }
+    }
 
 }
 
@@ -79,7 +74,7 @@ function validateURL(url) {
     return urlRegex.test(url);
   }
 
-app.get('/redirect-url', (req, res) => {
+app.get('/redirect-url', async (req, res) => {
     try {
         let redirectUrl = req.query.url;
         let email = req.query.email;
@@ -88,68 +83,110 @@ app.get('/redirect-url', (req, res) => {
         let valid_e = validateEmail(email);
         
         if (valid_ru && valid_e) {
+            await record_managaer(email, redirectUrl, 'visited');
             res.redirect(redirectUrl);
-            record_managaer(email, redirectUrl, 'visited');
         } else {
             res.status(400).send('...wrong url...');
         }
 
     } catch(e){
-        console.log("")
+        let x = "";
     }
 });
 
-app.get('/seen-mail', (req, res) => {
+app.get('/seen-mail', async (req, res) => {
     try {
-        let redirectUrl = req.query.url;
+        let affiliateUrl = req.query.url;
         let email = req.query.email;
 
-        let valid_ru = validateURL(redirectUrl);
+        let valid_ru = validateURL(affiliateUrl);
         let valid_e = validateEmail(email);
 
         if (valid_ru && valid_e) {
+            await record_managaer(email, affiliateUrl, 'seen');
             res.sendFile('base/small_pixel.png');
-            record_managaer(email, redirectUrl, 'seen');
         } else {
             res.status(400).send('...wrong url...');
         }
     } catch(e) {
-        console.log("")
+        let x = "";
     }
 });
+  
 
-app.get('/download', (req, res) => {
+app.get('/download', async (req, res) => {
     let pass = req.query.pass;
     let email = req.query.email;
+
     if (email === "yaminahad420@gmail.com" && pass === "password") {
-        let filePath = 'data.csv';
-        res.download(filePath, 'reports.csv', (err) => {
-            if (err) {
-                console.error('File download error:', err);
-                res.status(500).send('An error occurred during the download.');
+        let db_catts = await client.query("SELECT * FROM users;");
+        let catts_rows = db_catts.rows;
+
+        const fileName = 'emaill-reports.csv';
+        let csvContent = 'seen,visited,email,affiliateurl\n';
+        
+        async function cat_await() {
+            for (let i = 0; i < catts_rows.length; i++) {
+                let cat_row = catts_rows[i];
+                csvContent += `${cat_row.seen},${cat_row.visited},${cat_row.email},${cat_row.affiliateurl}\n`;
             }
-        });
+        }
+
+        await cat_await();
+
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        res.setHeader('Content-Type', 'text/csv');
+        res.send(csvContent);
+
     } else {
         res.status(400).send('...loging in...');
     }
 });
 
-app.get('/emptyingfile', (req, res) => {
+app.get('/delete-all-collection', async (req, res) => {
     let pass = req.query.pass;
     let email = req.query.email;
     if (email === "yaminahad420@gmail.com" && pass === "password") {
+        await delete_db_cats();
         res.redirect("/reports-login?email=yaminahad420@gmail.com&pass=password")
-        let filePath = 'data.csv';
-        fs.writeFileSync(filePath, '');
     } else {
         res.status(400).send('...loging in...');
     }
 });
 
-app.get('/reports-login', (req, res) => {
+async function web_visits_count() {
+    let results = await client.query("SELECT * FROM website_visitor_count;");
+    let total_visited = Number(results.rows[0].count);
+    total_visited += 1;
+    await client.query(`UPDATE website_visitor_count SET count = ${total_visited};`);
+}
+
+app.get('/website-visits-tracker', async (req, res) => {
+    // Simple Steps
+    // DROP TABLE website_visitor_count;
+    // CREATE TABLE website_visitor_count (count INT);
+    // INSERT INTO website_visitor_count (count) VALUES (0);
+    // SELECT * FROM website_visitor_count;
+    // UPDATE website_visitor_count SET count = ${};
+
+    let pass = req.query.pass;
+    let email = req.query.email;
+
+    if (email === "yaminahad420@gmail.com" && pass === "password") {
+        await web_visits_count();
+        res.send({record_added: true});
+    } else {
+        res.status(400).send('...loging in...');
+    }
+});
+
+app.get('/reports-login', async (req, res) => {
     try {
         let pass = req.query.pass;
         let email = req.query.email;
+
+        let db_catts = await client.query("SELECT * FROM users;");
+        let catts_rows = db_catts.rows;
         let html = `
         <table>
         <tr>
@@ -160,94 +197,80 @@ app.get('/reports-login', (req, res) => {
         </tr>`;
         
         if (email === "yaminahad420@gmail.com" && pass === "password") {
-            fs.createReadStream('data.csv')
-            .pipe(csv())
-            .on('data', (row) => {
+            for (let i = 0; i < catts_rows.length; i++) {
                 html += `
                 <tr>
-                    <td>${row.emails}</td>
-                    <td>${row.seen}</td>
-                    <td>${row.visited}</td>
-                    <td>${row.affiliate}</td>
+                    <td>${catts_rows[i].email}</td>
+                    <td>${catts_rows[i].seen}</td>
+                    <td>${catts_rows[i].visited}</td>
+                    <td>${catts_rows[i].affiliateurl}</td>
                 </tr>
                 `;
-            })
-            .on('end', () => {
-                html += '</table>';
-                res.send(`
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Report Page</title>
-                    <style>
-                        table {
-                        font-family: arial, sans-serif;
-                        border-collapse: collapse;
-                        width: 100%;
-                        }
+            }
+        
+            html += '</table>';
+        
+            res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Report Page</title>
+                <style>
+                    table {
+                    font-family: arial, sans-serif;
+                    border-collapse: collapse;
+                    width: 100%;
+                    }
 
-                        td, th {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                        }
+                    td, th {
+                    border: 1px solid #dddddd;
+                    text-align: left;
+                    padding: 8px;
+                    }
 
-                        tr:nth-child(even) {
-                        background-color: #dddddd;
-                        }
-                    </style>
-                </head>
-                <body style="font-family: cursive;">
-                    <h1>Report Page</h1>
-                    <div style="height: 400px; overflow: auto; margin: 15px 12px; font-size: 14px;">
-                    ${html}
-                    </div>
+                    tr:nth-child(even) {
+                    background-color: #dddddd;
+                    }
+                </style>
+            </head>
+            <body style="font-family: cursive;">
+                <h1>Report Page</h1>
 
-                    <button id="downloadBtn" style="margin-top: 15px;margin-left: 20px;">Download File</button>
-                    <button id="emptyBtn" style="margin-top: 15px;margin-left: 20px;">Empty File</button>
+                <div style="height: 400px; overflow: auto; margin: 15px 12px; font-size: 14px;">
+                ${html}
+                </div>
 
-                    <script>
+                <button id="downloadBtn" style="margin-top: 15px;margin-left: 20px;">Download File</button>
+                <button id="emptyBtn" style="margin-top: 15px;margin-left: 20px;">Empty Cats</button>
 
-                        document.getElementById('downloadBtn').addEventListener('click', () => {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const email = urlParams.get('email');
-                            const pass = urlParams.get('pass');
-                            window.location.href = \`/download?email=\${email}&pass=\${pass}\`;
-                        });
+                <script>
 
-                        document.getElementById('emptyBtn').addEventListener('click', () => {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const email = urlParams.get('email');
-                            const pass = urlParams.get('pass');
-                            window.location.href = \`/emptyingfile?email=\${email}&pass=\${pass}\`;
-                        });
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const email = urlParams.get('email');
+                    const pass = urlParams.get('pass');
 
-                    </script>
-                </body>
-                </html>
-                `)
+                    document.getElementById('downloadBtn').addEventListener('click', () => {
+                        window.location.href = \`/download?email=\${email}&pass=\${pass}\`;
+                    });
 
-            });
+                    document.getElementById('emptyBtn').addEventListener('click', () => {
+                        window.location.href = \`/delete-all-collection?email=\${email}&pass=\${pass}\`;
+                    });
+
+                </script>
+            </body>
+            </html>
+            `);
 
         } else {
             res.status(400).send('...loging in...');
         }
 
     } catch(e) {
-        console.log("")
+        let x = "";
     }
 });
-
-// app.listen(port, () => {
-//   console.log(`Example app listening on port ${port}`)
-// })
-
-// how you can host:
-// https://medium.com/boca-code/the-basic-process-is-that-we-will-use-firebase-cloud-functions-to-create-a-single-function-app-13ba3b852077
-// issue is need to use credit card...
-
-// exports.app = functions.https.onRequest(app);
 
 module.exports.handler = serverless(app);
