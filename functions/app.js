@@ -104,7 +104,8 @@ app.get('/seen-mail', async (req, res) => {
 
         if (valid_ru && valid_e) {
             await record_managaer(email, affiliateUrl, 'seen');
-            res.sendFile('base/small_pixel.png');
+            // res.sendFile('base/small_pixel.png');
+            res.redirect("https://records-adder.netlify.app/small_pixel.png");
         } else {
             res.status(400).send('...wrong url...');
         }
