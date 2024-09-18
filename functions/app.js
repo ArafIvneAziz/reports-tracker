@@ -1,8 +1,6 @@
 const serverless = require('serverless-http');
-from datetime import datetime
 const express = require('express')
 const { Client } = require('pg')
-import pytz
 
 const client = new Client("postgresql://yamin:rf8uua05IG0clw1B6F2BpA@inofficial-projects-9932.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/email-track?sslmode=verify-full")
 
@@ -42,16 +40,21 @@ async function record_managaer(email, url, type) {
     }
 
     # absolute west to east 'united states' has 3 hours of timegape, west is 3 hours late, east is 3 hours fast. LA to NYC
-    timezone = pytz.timezone('America/New_York')
-    current_time = datetime.now(timezone)
+    const currentDate = new Date();
+    const options = {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,  // Use 12-hour format with AM/PM
+    };
     
-    # timezone_2 = pytz.timezone('America/Los_Angeles')
-    # current_time_2 = datetime.now(timezone_2)
-    # Print the current time in the desired format
-    # print("NYC:", current_time.strftime('"%Y-%m-%d" -- "%I:%M:%S %p, %Z %z"'))
-    # print("LA:", current_time_2.strftime('"%Y-%m-%d" -- "%I:%M:%S %p, %Z %z"'))
-    
-    nyctime = current_time.strftime('"%Y-%m-%d" -- "%I:%M:%S %p, %Z %z"')
+    // Format the date using the options defined above
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const nyctime = formatter.format(currentDate);
     
     try {
 
