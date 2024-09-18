@@ -60,23 +60,23 @@ async function record_managaer(email, url, type) {
     try {
 
         // Find queries
-        let results = await client.query(`SELECT * FROM users WHERE email = "${email}" AND affiliateurl = "${url}";`);
+        let results = await client.query(`SELECT * FROM users WHERE email = '${email}' AND affiliateurl = '${url}';`);
         let row = results.rows[0];
 
         if(row.visited == true) {
             let x = "";
         } else if(visited == true) {
             // Update query
-            await client.query(`UPDATE users SET seen = TRUE, visited = TRUE WHERE email = "${email}" AND affiliateurl = "${url}";`);
+            await client.query(`UPDATE users SET seen = TRUE, visited = TRUE WHERE email = '${email}' AND affiliateurl = '${url}';`);
         }
         
     } catch (e) {
         if(visited == true) {
              // Insert query
-             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, TRUE, "${email}", "${url}");`);
+             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, TRUE, '${email}', '${url}');`);
         } else {
             // Insert query
-            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, FALSE, "${email}", "${url}");`);
+            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, FALSE, '${email}', '${url}');`);
         }
     }
 
