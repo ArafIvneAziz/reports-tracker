@@ -73,10 +73,10 @@ async function record_managaer(email, url, type) {
     } catch (e) {
         if(visited == true) {
              // Insert query
-             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, TRUE, '${email}', '${url}');`);
+             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, TRUE, '${email}', '${url}');`);
         } else {
             // Insert query
-            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, FALSE, '${email}', '${url}');`);
+            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, FALSE, '${email}', '${url}');`);
         }
     }
 
