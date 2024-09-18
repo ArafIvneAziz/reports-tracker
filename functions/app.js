@@ -40,7 +40,7 @@ async function record_managaer(email, url, type) {
         seen = true;
     }
 
-    # absolute west to east 'united states' has 3 hours of timegape, west is 3 hours late, east is 3 hours fast. LA to NYC
+    // absolute west to east 'united states' has 3 hours of timegape, west is 3 hours late, east is 3 hours fast. LA to NYC
     let currentDate = new Date();
     let options = {
         timeZone: 'America/New_York',
