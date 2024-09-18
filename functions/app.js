@@ -41,8 +41,8 @@ async function record_managaer(email, url, type) {
     }
 
     # absolute west to east 'united states' has 3 hours of timegape, west is 3 hours late, east is 3 hours fast. LA to NYC
-    const currentDate = new Date();
-    const options = {
+    let currentDate = new Date();
+    let options = {
         timeZone: 'America/New_York',
         year: 'numeric',
         month: '2-digit',
@@ -54,8 +54,8 @@ async function record_managaer(email, url, type) {
     };
     
     // Format the date using the options defined above
-    const formatter = new Intl.DateTimeFormat('en-US', options);
-    const nyctime = formatter.format(currentDate);
+    let formatter = new Intl.DateTimeFormat('en-US', options);
+    let nyctime = formatter.format(currentDate);
     
     try {
 
