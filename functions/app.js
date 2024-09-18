@@ -41,21 +41,21 @@ async function record_managaer(email, url, type) {
     }
 
     // absolute west to east 'united states' has 3 hours of timegape, west is 3 hours late, east is 3 hours fast. LA to NYC
-    // let currentDate = new Date();
-    // let options = {
-    //     timeZone: 'America/New_York',
-    //     year: 'numeric',
-    //     month: '2-digit',
-    //     day: '2-digit',
-    //     hour: '2-digit',
-    //     minute: '2-digit',
-    //     second: '2-digit',
-    //     hour12: true,  // Use 12-hour format with AM/PM
-    // };
+    let currentDate = new Date();
+    let options = {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,  // Use 12-hour format with AM/PM
+    };
     
-    // // Format the date using the options defined above
-    // let formatter = new Intl.DateTimeFormat('en-US', options);
-    // let nyctime = formatter.format(currentDate);
+    // Format the date using the options defined above
+    let formatter = new Intl.DateTimeFormat('en-US', options);
+    let nyctime = formatter.format(currentDate);
     
     try {
 
@@ -73,10 +73,10 @@ async function record_managaer(email, url, type) {
     } catch (e) {
         if(visited == true) {
              // Insert query
-             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, TRUE, '${email}', '${url}');`);
+             await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, TRUE, '${email}', '${url}', '${nyctime}');`);
         } else {
             // Insert query
-            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl) VALUES (TRUE, FALSE, '${email}', '${url}');`);
+            await client.query(`INSERT INTO users (seen, visited, email, affiliateurl, nyctime) VALUES (TRUE, FALSE, '${email}', '${url}', '${nyctime}');`);
         }
     }
 
