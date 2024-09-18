@@ -213,6 +213,7 @@ app.get('/reports-login', async (req, res) => {
           <th>seen</th>
           <th>visited</th>
           <th>affiliate</th>
+          <th>nyctime</th>
         </tr>`;
         
         if (email === "yaminahad420@gmail.com" && pass === "password") {
@@ -223,6 +224,7 @@ app.get('/reports-login', async (req, res) => {
                     <td>${catts_rows[i].seen}</td>
                     <td>${catts_rows[i].visited}</td>
                     <td>${catts_rows[i].affiliateurl}</td>
+                    <td>${catts_rows[i].nyctime}</td>
                 </tr>
                 `;
             }
