@@ -25,6 +25,7 @@ async function delete_db_cats() {
         Visited BOOLEAN,
         Email VARCHAR(255),
         AffiliateURL VARCHAR(255),
+        Nyctime VARCHAR(255),
         CONSTRAINT email_format CHECK (Email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
         );
     `);
