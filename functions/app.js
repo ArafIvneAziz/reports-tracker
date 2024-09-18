@@ -142,12 +142,12 @@ app.get('/download', async (req, res) => {
         let catts_rows = db_catts.rows;
 
         const fileName = 'emaill-reports.csv';
-        let csvContent = 'seen,visited,email,affiliateurl\n';
+        let csvContent = 'seen,visited,email,affiliateurl,nyctime\n';
         
         async function cat_await() {
             for (let i = 0; i < catts_rows.length; i++) {
                 let cat_row = catts_rows[i];
-                csvContent += `${cat_row.seen},${cat_row.visited},${cat_row.email},${cat_row.affiliateurl}\n`;
+                csvContent += `${cat_row.seen},${cat_row.visited},${cat_row.email},${cat_row.affiliateurl},${cat_row.nyctime}\n`;
             }
         }
 
